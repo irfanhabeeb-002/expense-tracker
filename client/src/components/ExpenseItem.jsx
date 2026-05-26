@@ -1,21 +1,8 @@
 import { useState } from 'react';
+import { formatINR, formatDateIN } from '../utils/format.js';
+import { normalizeCategory } from '../utils/category.js';
 
-function formatMoney(amount) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-}
-
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-export default function ExpenseItem({ expense, onEdit, onDelete, deleting }) {
+export default function ExpenseItem({ expense, onEdit, onDelete, deleting, disabled }) {
   const [confirming, setConfirming] = useState(false);
 
   function handleDeleteClick() {
@@ -36,15 +23,15 @@ export default function ExpenseItem({ expense, onEdit, onDelete, deleting }) {
       <div className="expense-item__main">
         <div className="expense-item__top">
           <h3 className="expense-item__title">{expense.title}</h3>
-          <span className="expense-item__amount">{formatMoney(expense.amount)}</span>
+          <span className="expense-item__amount">{formatINR(expense.amount)}</span>
         </div>
 
         <div className="expense-item__meta">
-          <span className={`badge badge--${expense.category.toLowerCase()}`}>
-            {expense.category}
+          <span className="badge" data-category={normalizeCategory(expense.category)}>
+            {normalizeCategory(expense.category)}
           </span>
           <time className="expense-item__date" dateTime={expense.date}>
-            {formatDate(expense.date)}
+            {formatDateIN(expense.date)}
           </time>
         </div>
 
@@ -74,10 +61,22 @@ export default function ExpenseItem({ expense, onEdit, onDelete, deleting }) {
           </div>
         ) : (
           <>
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => onEdit(expense)}>
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={() => onEdit(expense)}
+              disabled={disabled || deleting}
+              aria-label={`Edit ${expense.title}`}
+            >
               Edit
             </button>
-            <button type="button" className="btn btn--ghost btn--sm btn--danger-text" onClick={handleDeleteClick}>
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm btn--danger-text"
+              onClick={handleDeleteClick}
+              disabled={disabled || deleting}
+              aria-label={`Delete ${expense.title}`}
+            >
               Delete
             </button>
           </>

@@ -10,15 +10,12 @@ import {
   updateExpense,
   deleteExpense,
 } from './services/api.js';
-
-const CATEGORIES = [
-  'Food',
-  'Transport',
-  'Shopping',
-  'Bills',
-  'Entertainment',
-  'Other',
-];
+import {
+  sortExpensesNewestFirst,
+  buildRecencyMap,
+  bumpRecency,
+} from './utils/sortExpenses.js';
+import { CATEGORIES, normalizeCategory } from './utils/category.js';
 
 const DEFAULT_FILTERS = {
   category: '',
@@ -28,8 +25,15 @@ const DEFAULT_FILTERS = {
 };
 
 function filterExpenses(expenses, filters) {
+  const invalidDateRange =
+    filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo;
+
+  if (invalidDateRange) return [];
+
   return expenses.filter((expense) => {
-    if (filters.category && expense.category !== filters.category) return false;
+    if (filters.category && normalizeCategory(expense.category) !== filters.category) {
+      return false;
+    }
 
     if (filters.search) {
       const q = filters.search.toLowerCase().trim();
@@ -43,10 +47,6 @@ function filterExpenses(expenses, filters) {
   });
 }
 
-function sortNewestFirst(expenses) {
-  return [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
-}
-
 export default function App() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,13 +55,16 @@ export default function App() {
   const [deletingId, setDeletingId] = useState(null);
   const [editingExpense, setEditingExpense] = useState(null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [recencyById, setRecencyById] = useState(() => new Map());
 
   const loadExpenses = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const data = await fetchExpenses();
-      setExpenses(sortNewestFirst(data));
+      const recency = buildRecencyMap(data);
+      setRecencyById(recency);
+      setExpenses(sortExpensesNewestFirst(data, recency));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -74,8 +77,8 @@ export default function App() {
   }, [loadExpenses]);
 
   const filteredExpenses = useMemo(
-    () => sortNewestFirst(filterExpenses(expenses, filters)),
-    [expenses, filters]
+    () => sortExpensesNewestFirst(filterExpenses(expenses, filters), recencyById),
+    [expenses, filters, recencyById]
   );
 
   async function handleSubmit(payload, id) {
@@ -84,13 +87,24 @@ export default function App() {
     try {
       if (id) {
         const updated = await updateExpense(id, payload);
-        setExpenses((prev) =>
-          sortNewestFirst(prev.map((e) => (e.id === id ? updated : e)))
-        );
+        setRecencyById((prev) => {
+          const nextRecency = bumpRecency(prev, updated.id);
+          setExpenses((prevExpenses) => {
+            const rest = prevExpenses.filter((e) => e.id !== id);
+            return sortExpensesNewestFirst([...rest, updated], nextRecency);
+          });
+          return nextRecency;
+        });
         setEditingExpense(null);
       } else {
         const created = await createExpense(payload);
-        setExpenses((prev) => sortNewestFirst([...prev, created]));
+        setRecencyById((prev) => {
+          const nextRecency = bumpRecency(prev, created.id);
+          setExpenses((prevExpenses) =>
+            sortExpensesNewestFirst([...prevExpenses, created], nextRecency)
+          );
+          return nextRecency;
+        });
       }
       return true;
     } catch (err) {
@@ -107,6 +121,11 @@ export default function App() {
     try {
       await deleteExpense(id);
       setExpenses((prev) => prev.filter((e) => e.id !== id));
+      setRecencyById((prev) => {
+        const next = new Map(prev);
+        next.delete(id);
+        return next;
+      });
       if (editingExpense?.id === id) setEditingExpense(null);
     } catch (err) {
       setError(err.message);
@@ -154,11 +173,13 @@ export default function App() {
           <Filters categories={CATEGORIES} filters={filters} onChange={setFilters} />
           <ExpenseList
             expenses={filteredExpenses}
+            recencyById={recencyById}
             loading={loading}
             hasExpenses={expenses.length > 0}
             onEdit={handleEdit}
             onDelete={handleDelete}
             deletingId={deletingId}
+            actionsDisabled={saving || loading}
           />
         </section>
       </main>

@@ -1,10 +1,74 @@
 [
   {
-    "id": "f2ad13d3-455b-4ea9-9548-fee59c9d273b",
-    "title": "Coffee",
-    "amount": 120,
+    "id": "6970a5c3-f811-4f51-aec3-33ca65978e7d",
+    "title": "fruits",
+    "amount": 89,
     "category": "Food",
     "date": "2026-05-26",
-    "note": "test"
+    "note": "apple"
+  },
+  {
+    "id": "2ecd3f89-0520-41f4-825b-079e4c73e0be",
+    "title": "Uber to college",
+    "amount": 180,
+    "category": "Transport",
+    "date": "2026-05-26",
+    "note": ""
+  },
+  {
+    "id": "3e71e0ae-1a08-46c5-a2a0-6ef5d647c6b1",
+    "title": "Electricity",
+    "amount": 1080,
+    "category": "Bills",
+    "date": "2026-05-26",
+    "note": "KSEB"
+  },
+  {
+    "id": "5d958e8f-3d7b-4e20-b942-08a903f84d3c",
+    "title": "Movie",
+    "amount": 210,
+    "category": "Entertainment",
+    "date": "2026-05-26",
+    "note": "Drishyam 3"
+  },
+  {
+    "id": "0458d77d-f703-4bf1-8df2-9842cf4ef087",
+    "title": "bike repair",
+    "amount": 1780,
+    "category": "Other",
+    "date": "2026-05-26",
+    "note": ""
+  },
+  {
+    "id": "82171c48-d8da-4dd5-862c-01fda4d77f69",
+    "title": "bubble gum",
+    "amount": 0.5,
+    "category": "Food",
+    "date": "2026-05-26",
+    "note": ""
+  },
+  {
+    "id": "1bcbe26a-0159-49ea-a3f3-5ceb8062109c",
+    "title": "biscuit",
+    "amount": 50,
+    "category": "Food",
+    "date": "2026-05-21",
+    "note": ""
+  },
+  {
+    "id": "5825c371-5e8b-46db-917f-a7491ba3ddb5",
+    "title": "shirt",
+    "amount": 890,
+    "category": "Shopping",
+    "date": "2026-05-26",
+    "note": ""
+  },
+  {
+    "id": "6134b620-3de9-49f6-89fd-9fcb7a7a05a9",
+    "title": "Dress",
+    "amount": 888,
+    "category": "Shopping",
+    "date": "2026-05-26",
+    "note": ""
   }
 ]

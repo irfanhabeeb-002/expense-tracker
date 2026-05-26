@@ -1,17 +1,20 @@
 import ExpenseItem from './ExpenseItem.jsx';
+import { sortExpensesNewestFirst } from '../utils/sortExpenses.js';
 
 export default function ExpenseList({
   expenses,
+  recencyById,
   loading,
   hasExpenses,
   onEdit,
   onDelete,
   deletingId,
+  actionsDisabled,
 }) {
   if (loading) {
     return (
-      <section className="card expense-list" aria-live="polite">
-        <p className="state-message">Loading expenses…</p>
+      <section className="card expense-list" aria-live="polite" aria-busy="true">
+        <p className="state-message">Loading your expenses…</p>
       </section>
     );
   }
@@ -23,25 +26,29 @@ export default function ExpenseList({
           <span className="empty-state__icon" aria-hidden="true">
             ◇
           </span>
-          <h2 className="empty-state__title">No expenses yet</h2>
+          <h2 className="empty-state__title">No expenses added yet</h2>
           <p className="empty-state__text">
-            Add your first expense using the form on the left to start tracking.
+            Start by adding your first expense using the form on the left.
           </p>
         </div>
       </section>
     );
   }
 
-  if (expenses.length === 0) {
+  const sortedExpenses = recencyById
+    ? sortExpensesNewestFirst(expenses, recencyById)
+    : expenses;
+
+  if (sortedExpenses.length === 0) {
     return (
       <section className="card expense-list expense-list--empty">
         <div className="empty-state">
           <span className="empty-state__icon" aria-hidden="true">
             ◇
           </span>
-          <h2 className="empty-state__title">No expenses found</h2>
+          <h2 className="empty-state__title">No matching expenses</h2>
           <p className="empty-state__text">
-            Try adjusting your filters or search terms.
+            No expenses match your current filters. Try changing or clearing them.
           </p>
         </div>
       </section>
@@ -50,17 +57,21 @@ export default function ExpenseList({
 
   return (
     <section className="expense-list" aria-label="Expense list">
-      <p className="expense-list__count">
-        {expenses.length} expense{expenses.length !== 1 ? 's' : ''}
-      </p>
+      <div className="expense-list__header">
+        <h2 className="expense-list__title">Expenses</h2>
+        <span className="expense-list__count">
+          {sortedExpenses.length} {sortedExpenses.length === 1 ? 'entry' : 'entries'}
+        </span>
+      </div>
       <ul className="expense-list__items">
-        {expenses.map((expense) => (
+        {sortedExpenses.map((expense) => (
           <li key={expense.id}>
             <ExpenseItem
               expense={expense}
               onEdit={onEdit}
               onDelete={onDelete}
               deleting={deletingId === expense.id}
+              disabled={actionsDisabled}
             />
           </li>
         ))}
